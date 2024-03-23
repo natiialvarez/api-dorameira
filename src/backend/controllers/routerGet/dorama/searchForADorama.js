@@ -1,5 +1,4 @@
 const knex = require('../../../database/connection')
-
 const findADorama = async (req, res) => {
     const { name } = req.query;
     try {

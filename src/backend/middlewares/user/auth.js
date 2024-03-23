@@ -21,5 +21,23 @@ const authentication = async (req, res, next) => {
     }
 }
 
+const isOwner = async (req, res, next) => {
+    const { userid } = req.params
+    try {
+        const user = req.user
+        if (parseInt(userid) === user.id) {
+            next()
+        } else {
+            console.log(userid, user.id)
+            return res.status(403).json({ message: 'Você não tem permissão para acessar este recurso.' })
 
-module.exports = authentication
+        }
+    } catch (error) {
+        return res.status(500).json({ message: 'Internal Error' })
+    }
+}
+
+module.exports = {
+    authentication,
+    isOwner
+}

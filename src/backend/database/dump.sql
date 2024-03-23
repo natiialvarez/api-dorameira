@@ -43,7 +43,6 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     date_of_birth DATE,
-    watched_dorama_name TEXT REFERENCES doramas(name),
     registered_dorama_name TEXT REFERENCES doramas(name)
 );
 
@@ -57,3 +56,10 @@ FOREIGN KEY (added_by_user_id) REFERENCES users(id);
 
 ALTER TABLE doramas
 ADD COLUMN add_by_user_email VARCHAR(255);
+
+CREATE TABLE my_list (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id),
+    dorama_id INT REFERENCES doramas(id),
+    dorama_name VARCHAR(255)
+);

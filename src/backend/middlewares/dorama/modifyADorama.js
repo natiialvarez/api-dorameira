@@ -1,7 +1,6 @@
 const knex = require('../../database/connection')
 
 const verificationIfTheUserPost = async (req, res, next) => {
-    const { id } = req.params;
     const user = req.user
     try {
         const existingDorama = await knex('doramas').where({ id, added_by_user_id: user.id }).first()

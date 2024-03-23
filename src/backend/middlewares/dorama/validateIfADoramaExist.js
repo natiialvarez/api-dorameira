@@ -1,22 +1,50 @@
 const knex = require('../../database/connection')
 const generateErrorDetails = require('../joi/errorJoi')
 
-const validateExistingDorama = (joiSchema) => {
+const validateExistingDoramaTrue = (joiSchema) => {
     return async (req, res, next) => {
-        const { name } = req.body
+        const { dorama } = req.body
         try {
-            await joiSchema.validateAsync(req.body, { abortEarly: false })
-            const lowerCaseName = name.toLowerCase()
-            const dorama = await knex('doramas')
-                .whereRaw('LOWER(name) = ?', [lowerCaseName])
-                .orWhereRaw('UPPER(name) = ?', [lowerCaseName.toUpperCase()])
+
+
+            const doramaExist = await knex('doramas')
+                .whereRaw('LOWER(name) = ?', [dorama.toLowerCase()])
+                .orWhereRaw('UPPER(name) = ?', [dorama.toUpperCase()])
                 .first()
-            if (dorama) {
-                return res.status(200).json({ message: `Dorama ${name} já está cadastrado.` })
+            if (doramaExist) {
+                return res.status(200).json({ message: `Dorama ${dorama} já está cadastrado.` })
             }
             next()
 
         } catch (error) {
+            console.log(error)
+            if (error.isJoi) {
+                const errorDetails = generateErrorDetails(error)
+                return res.status(400).json({ errors: errorDetails })
+            } else {
+                return res.status(500).json({ message: 'Internal Error' })
+            }
+        }
+    }
+}
+
+const validateExistingDoramaTrueForList = (joiSchema) => {
+    return async (req, res, next) => {
+        const { dorama } = req.body
+        try {
+            await joiSchema.validateAsync(req.body, { abortEarly: false })
+
+            const doramaExist = await knex('doramas')
+                .whereRaw('LOWER(name) = ?', [dorama.toLowerCase()])
+                .orWhereRaw('UPPER(name) = ?', [dorama.toUpperCase()])
+                .first()
+            if (!doramaExist) {
+                return res.status(404).json({ message: 'Dorama não está cadastrado' })
+            }
+            req.doramaUse = doramaExist
+            next()
+        } catch (error) {
+            console.log(error)
             if (error.isJoi) {
                 const errorDetails = generateErrorDetails(error)
                 return res.status(400).json({ errors: errorDetails })
@@ -28,5 +56,6 @@ const validateExistingDorama = (joiSchema) => {
 }
 
 module.exports = {
-    validateExistingDorama
+    validateExistingDoramaTrue,
+    validateExistingDoramaTrueForList
 }
